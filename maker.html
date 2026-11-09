@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Planner link maker (seller tool)</title><meta name="robots" content="noindex">
+<style>
+@font-face{font-family:"DM Sans";src:url(fonts/sans-400.woff2)}@font-face{font-family:"DM Sans";src:url(fonts/sans-700.woff2);font-weight:700 900}
+@font-face{font-family:Serif;src:url(fonts/serif.woff2)}@font-face{font-family:Script;src:url(fonts/script.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:"DM Sans",system-ui,sans-serif;background:#FBF6F1;color:#2F2A33;padding:24px 16px}
+.w{max-width:980px;margin:0 auto;display:grid;gap:16px}@media(min-width:860px){.w{grid-template-columns:1fr 1fr}}
+h1{font-family:Serif;font-weight:400;font-size:34px;grid-column:1/-1}h1 small{display:block;font-family:"DM Sans";font-size:14px;color:#7A7590;margin-top:4px}
+.c{background:#fff;border-radius:20px;padding:20px;border:1px solid #E7E2F0}
+label{display:block;font-size:12.5px;font-weight:800;color:#7A7590;margin:12px 0 5px}
+input,select,textarea{width:100%;padding:11px 13px;border-radius:12px;border:2px solid #E7E2F0;background:#F8F6FC;font:inherit;font-size:15px}
+.sw{display:flex;flex-wrap:wrap;gap:8px}.sw button{border:0;background:none;cursor:pointer;font:inherit;font-size:11.5px;font-weight:800;color:#7A7590;display:flex;flex-direction:column;align-items:center;gap:4px}
+.sw i{width:40px;height:40px;border-radius:50%;display:block;border:3px solid #fff;box-shadow:0 0 0 2px #E7E2F0}.sw .on i{box-shadow:0 0 0 3px #2E2A3D}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{border:2px solid transparent;background:#F8F6FC;border-radius:99px;padding:5px 10px;font-size:19px;cursor:pointer}.chips .on{border-color:#2E2A3D}
+.btn{border:0;cursor:pointer;background:#C47A86;color:#fff;font:inherit;font-weight:800;padding:11px 16px;border-radius:12px;margin:8px 8px 0 0}.btn.g{background:#F1EEF9;color:#2E2A3D}
+.cover{border-radius:20px;padding:20px;display:flex;gap:16px;align-items:center;margin-bottom:12px}.cover .em{width:60px;height:60px;border-radius:18px;background:#fff;display:grid;place-items:center;font-size:30px}
+.cover .o{font-family:Script;font-size:42px;line-height:1}.cover .ti{font-family:Serif;font-size:26px}
+#link{font-size:13px;word-break:break-all;font-weight:700}#qr img{width:180px;height:180px;display:block;margin-top:10px;image-rendering:pixelated}
+</style></head><body><div class="w">
+<h1>Personalized planner link maker<small>Seller tool — fill in the buyer's personalization from the Etsy order, then send them the link (or the QR code).</small></h1>
+<div class="c">
+ <label>Name 1</label><input id="name" value="Emma"><label>Name 2</label><input id="name2" value="James"><label>Wedding date</label><input id="date" type="date">
+ <label>Planner title</label><input id="title" list="tl" value="Wedding Planner"><datalist id="tl"><option value="Wedding Planner"><option value="Our Wedding"><option value="The Big Day"><option value="Mr & Mrs"></datalist>
+ <label>Colour theme</label><div class="sw" id="sw"></div>
+ <label>Cover icon</label><div class="chips" id="cv"></div>
+ <label>Currency symbol</label><input id="cur" value="$" maxlength="4">
+</div>
+<div class="c">
+ <div class="cover" id="prev"></div>
+ <label>Buyer's personal link</label><div id="link"></div>
+ <button class="btn" id="copy">Copy link</button><button class="btn g" id="copymsg">Copy Etsy message</button><button class="btn g" id="dl">Download QR</button><button class="btn g" id="open">Test it</button>
+ <div id="qr"></div>
+ <label>Message to send</label><textarea id="msg" rows="9"></textarea>
+</div></div>
+<script src="maker-qr.js"></script>
+<script>
+const T=[["blush","Blush","#C47A86","#FBF6F4"],["sage","Sage","#6F8F73","#F2F5F1"],["champagne","Champagne","#A9884F","#FBF7F0"],["dustyblue","Dusty Blue","#6C87A8","#F1F4F8"],["terracotta","Terracotta","#B9694E","#FBF3EF"],["classic","Black & White","#2E2A2B","#F5F4F2"],["dark","Midnight","#E9A8B4","#15131A"]];
+const C=["💍","💐","🤍","🥂","🌸","🕊️","✨","💒","🌿","🎀","🌹","💌"];let th="blush",cv="💍";const $=i=>document.getElementById(i);
+const base=location.href.replace(/maker\.html.*$/,"");
+function draw(){ $("sw").innerHTML=T.map(([k,n,c,b])=>`<button class="${k===th?"on":""}" data-t="${k}"><i style="background:linear-gradient(135deg,${b} 50%,${c} 50%)"></i>${n}</button>`).join("");
+ $("cv").innerHTML=C.map(c=>`<button class="${c===cv?"on":""}" data-c="${c}">${c}</button>`).join("");
+ const t=T.find(x=>x[0]===th),n1=$("name").value.trim(),n2=$("name2").value.trim(),n=n1&&n2?n1+" & "+n2:(n1||n2),ti=$("title").value.trim()||"Wedding Planner";
+ $("prev").style.background=`linear-gradient(120deg,${t[3]},#fff 85%)`;$("prev").style.border="1px solid #E7E2F0";
+ $("prev").innerHTML=`<div class="em">${cv}</div><div><div class="o" style="color:${t[2]};font-size:36px">${n.replace(/</g,"")}</div><div class="ti">${ti.replace(/</g,"")}</div></div>`;
+ const q=new URLSearchParams();if(n1)q.set("n1",n1);if(n2)q.set("n2",n2);if($("date").value)q.set("date",$("date").value);q.set("title",ti);q.set("theme",th);q.set("cover",cv);const cur=$("cur").value.trim();if(cur&&cur!=="$")q.set("cur",cur);
+ const url=base+"?"+q.toString();$("link").textContent=url;
+ const qr=qrcode(0,"M");qr.addData(unescape(encodeURIComponent(url)));qr.make();$("qr").innerHTML=qr.createImgTag(6,8);
+ $("msg").value=`Hi ${n1||"there"}! 💍 Congratulations!\n\nYour personalized ${ti} is ready. Open your own link here:\n${url}\n\nTip: open it on your phone and tap Share → Add to Home Screen (iPhone) or ⋮ → Add to Home screen (Android) so it works like an app.\n\nYour name and colours are already set — you can change them any time in Personalize.\n\nThank you so much for your order! Any questions, just message me here.`; }
+document.addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(b){th=b.dataset.t;draw();}const c=e.target.closest("[data-c]");if(c){cv=c.dataset.c;draw();}});
+["name","name2","date","title","cur"].forEach(i=>$(i).addEventListener("input",draw));
+$("copy").onclick=()=>{navigator.clipboard.writeText($("link").textContent);$("copy").textContent="Copied ✓";setTimeout(()=>$("copy").textContent="Copy link",1500)};
+$("copymsg").onclick=()=>{navigator.clipboard.writeText($("msg").value);$("copymsg").textContent="Copied ✓";setTimeout(()=>$("copymsg").textContent="Copy Etsy message",1500)};
+$("dl").onclick=()=>{const a=document.createElement("a");a.href=$("qr").querySelector("img").src;a.download="wedding-planner-qr-"+($("name").value.trim()||"buyer")+".gif";a.click()};
+$("open").onclick=()=>window.open($("link").textContent.replace("?","?_t="+Date.now()+"&"),"_blank");
+draw();
+</script></body></html>
